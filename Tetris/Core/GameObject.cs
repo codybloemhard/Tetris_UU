@@ -42,31 +42,46 @@ namespace Core
 
         private bool dirtybounds = true, dirtydrawscale = true;
         private Vector2 pos, size, sizemul;
-        public string tag = "";
+        private List<GameObject> childs;
+        private Dictionary<string, Component> components;
+        private Component[] comparray;//for fast iteration
+        protected GameObject parent;
         protected GameObjectManager manager;
         protected Texture2D sprite;
         protected Bounds bounds;
         protected Color colour;
+        public string tag = "";
 
         public GameObject()
         {
-            bounds = new Bounds(0, 0, 0, 0);
-            dirtybounds = true;
+            construct();
         }
         public GameObject(string tag)
         {
+            construct();
             this.tag = tag;
+        }
+        private void construct()
+        {
             bounds = new Bounds(0, 0, 0, 0);
             dirtybounds = true;
+            dirtydrawscale = true;
+            colour = Color.White;
+            childs = new List<GameObject>();
+            components = new Dictionary<string, Component>();
         }
 
         public abstract void Init();
-        public abstract void Update(GameTime gameTime);
+        public virtual void Update(GameTime gameTime)
+        {
+            for (int i = 0; i < comparray.Length; i++)
+                comparray[i].Update();
+        }
         public virtual void Draw(GameTime time, SpriteBatch batch)
         {
             if (dirtydrawscale)
             {
-                sizemul = Size * Grid.Scale(new Vector2(sprite.Width, sprite.Height));
+                sizemul = size * Grid.Scale(new Vector2(sprite.Width, sprite.Height));
                 dirtydrawscale = false;
             }
             //scale de sprite zodat alles resolutie independed is.
@@ -111,6 +126,60 @@ namespace Core
         {
             if (GetBounds().Intersects(e.GetBounds())) return true;
             return false;
+        }
+
+        public bool HasComponent(string name)
+        {
+            return components.ContainsKey(name);
+        }
+        public T GetComponent<T>()
+        {
+            for (int i = 0; i < comparray.Length; i++)
+            {
+                if (comparray[i] is T)
+                    return (T)Convert.ChangeType(comparray[i], typeof(T));
+            }
+            return default(T);
+        }
+        public T GetComponent<T>(string name)
+        {
+            if(components.ContainsKey(name))
+                return (T)Convert.ChangeType(components[name], typeof(T));
+            return default(T);
+        }
+        public void AddComponent(string name, Component com)
+        {
+            components.Add(name, com);
+            comparray = new Component[components.Count];
+            components.Values.CopyTo(comparray, 0);
+        }
+        public int ComponentCount { get { return components.Count; }  }
+
+        public GameObject Parent { get { return parent; } }
+        public GameObject[] Childeren { get { return childs.ToArray(); } }
+        public GameObject GetChild(int i)
+        {
+            if (i < 0 || i > childs.Count - 1)
+                return null;
+            return childs[i];
+        }
+        public void AddChild(GameObject obj)
+        {
+            childs.Add(obj);
+        }
+        public void RemoveChild(GameObject obj)
+        {
+            childs.Remove(obj);
+        }
+        public void SetParent(GameObject obj)
+        {
+            parent = obj;
+            obj.AddChild(this);
+        }
+        public void DeChild()
+        {
+            parent.RemoveChild(this);
+            parent = null;
         }
 
         public Vector2 Pos

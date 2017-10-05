@@ -50,6 +50,7 @@
     <Compile Include="Core\UI.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="States\ClassicTetris.cs" />
     <Compile Include="tetris.cs" />
   </ItemGroup>
   <ItemGroup>

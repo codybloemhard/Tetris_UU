@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Content;
 using Core;
+using Tetris.States;
 
 namespace Tetris
 {
@@ -36,9 +37,10 @@ namespace Tetris
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            //setup alle gamestates
-            
-            
+            //setup alle gamestates  
+            ClassicTetris game = new ClassicTetris();
+            gamestates.AddState("game", game);
+            gamestates.SetStartingState("game");
         }
 
         protected override void UnloadContent() { }
