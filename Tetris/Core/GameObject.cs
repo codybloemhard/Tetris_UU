@@ -41,7 +41,7 @@ namespace Core
         public partial class GameObjectManager { }
 
         private bool dirtybounds = true, dirtyscale = true;
-        private Vector2 pos, size;
+        private Vector2 localpos, pos, localsize, size;
         private List<GameObject> childs;
         private Dictionary<string, Component> components;
         private Component[] comparray;//for fast iteration
@@ -50,13 +50,19 @@ namespace Core
         protected GameObjectManager manager;
         protected Bounds bounds;
         public string tag = "";
+        private float gtime;
+        public bool active = true;
 
-        public GameObject()
+        public GameObject(GameObjectManager manager)
         {
+            this.manager = manager;
+            manager.Add(this);
             construct();
         }
-        public GameObject(string tag)
+        public GameObject(string tag, GameObjectManager manager)
         {
+            this.manager = manager;
+            manager.Add(this);
             construct();
             this.tag = tag;
         }
@@ -73,13 +79,21 @@ namespace Core
         public virtual void Init() { }
         public virtual void Update(float gameTime)
         {
+            if (!active) return;
+            gtime = gameTime;
             for (int i = 0; i < comparray.Length; i++)
-                comparray[i].Update();
+                comparray[i].Update(gameTime);
+            if (parent != null)
+            {
+                Pos = parent.Pos + localpos;
+                Size = parent.Size * localsize;
+            }
         }
         public void FinishFrame()
         {
+            if (!active) return;
             if (renderer != null)
-                renderer.Update();
+                renderer.Update(gtime);
             dirtybounds = false;
             dirtyscale = false;
         }
@@ -176,7 +190,6 @@ namespace Core
         public void SetParent(GameObject obj)
         {
             parent = obj;
-            obj.AddChild(this);
         }
         public void DeChild()
         {
@@ -187,7 +200,22 @@ namespace Core
         public Vector2 Pos
         {
             get { return pos; }
-            set { pos = value;  dirtybounds = true; }
+            set
+            {
+                pos = value;
+                dirtybounds = true;
+            }
+        }
+
+        public Vector2 LocalPos
+        {
+            get { return localpos; }
+            set
+            {
+                localpos = value;
+                Pos = parent.pos + localpos;
+                dirtybounds = true;
+            }
         }
 
         public Vector2 Size
@@ -195,5 +223,19 @@ namespace Core
             get { return size; }
             set { size = value; dirtybounds = true; dirtyscale = true; }
         }
+
+        public Vector2 LocalSize
+        {
+            get { return size; }
+            set
+            {
+                localsize = value;
+                size = parent.Size * localsize;
+                dirtybounds = true;
+                dirtyscale = true;
+            }
+        }
+
+        public GameObjectManager Manager { get { return manager; } }
     }
 }

@@ -39,7 +39,6 @@ namespace Core
             public void Add(GameObject o)
             {
                 //dit kan omdat deze class defined is in de GameObject class
-                o.manager = this;
                 objects.Add(o);
             }
 
@@ -97,6 +96,11 @@ namespace Core
             }
 
             public int Size { get { return objects.Count; } }
+
+            public void Hoi()
+            {
+                Console.WriteLine("hoi");
+            }
         }
     }
 }

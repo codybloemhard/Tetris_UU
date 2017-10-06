@@ -38,6 +38,8 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\CBlockMovement.cs" />
+    <Compile Include="Components\TetrisGrid.cs" />
     <Compile Include="Core\AssetManager.cs" />
     <Compile Include="Core\Component.cs" />
     <Compile Include="Core\CRender.cs" />
@@ -63,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Blocks.txt" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>

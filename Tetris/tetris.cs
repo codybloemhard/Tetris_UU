@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Content;
 using Core;
-using Tetris.States;
+using Tetris;
 
 namespace Tetris
 {
