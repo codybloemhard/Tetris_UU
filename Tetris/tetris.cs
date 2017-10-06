@@ -25,7 +25,6 @@ namespace Tetris
             graphics.PreferredBackBufferHeight = (int)Grid.ScreenSize.Y;
             Content.RootDirectory = "Content";
             AssetManager.content = Content;
-            gamestates = new GameStateManager();
             this.IsMouseVisible = true;
         }
 
@@ -38,6 +37,7 @@ namespace Tetris
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             //setup alle gamestates  
+            gamestates = new GameStateManager(spriteBatch);
             ClassicTetris game = new ClassicTetris();
             gamestates.AddState("game", game);
             gamestates.SetStartingState("game");
@@ -53,7 +53,7 @@ namespace Tetris
                 Exit();
                 return;
             }
-            gamestates.Update(gameTime);
+            gamestates.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
         }
 
         protected override void Draw(GameTime gameTime)

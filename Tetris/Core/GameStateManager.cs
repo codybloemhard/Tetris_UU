@@ -7,9 +7,9 @@ namespace Core
 {
     public interface GameState
     {
-        void Load();
+        void Load(SpriteBatch batch);
         void Unload();
-        void Update(GameTime time);
+        void Update(float time);
         void Draw(GameTime gameTime, SpriteBatch spriteBatch, GraphicsDevice device);
     }
     
@@ -35,12 +35,14 @@ namespace Core
         private Dictionary<string, GameState> states;
         private GameState currentstate;
         private static GameStateManager instance;
+        private SpriteBatch batch;
 
-        public GameStateManager()
+        public GameStateManager(SpriteBatch batch)
         {
             if (instance != null) return;
             states = new Dictionary<string, GameState>();
             currentstate = null;
+            this.batch = batch;
             instance = this;
         }
 
@@ -55,10 +57,10 @@ namespace Core
             if (change == null) return;
             if (change.type == CHANGETYPE.LOAD) instance.currentstate.Unload();
             instance.SetState(change.newstate);
-            if (change.type == CHANGETYPE.LOAD) instance.currentstate.Load();
+            if (change.type == CHANGETYPE.LOAD) instance.currentstate.Load(instance.batch);
         }
 
-        public void Update(GameTime time)
+        public void Update(float time)
         {
             Input.Update();
             if (currentstate == null) return;
@@ -75,7 +77,7 @@ namespace Core
         {
             if (state == null) return;
             states.Add(name, state);
-            states[name].Load();
+            states[name].Load(instance.batch);
         }
 
         public void RemoveState(string name)

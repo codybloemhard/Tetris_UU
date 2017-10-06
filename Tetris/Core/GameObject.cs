@@ -33,23 +33,22 @@ namespace Core
         }
     }
     
-    public abstract partial class GameObject
+    public partial class GameObject
     {
         /*zodat manager zich zelf can registreren,
         maar dat niet mogelijk is van buitenaf door andere objecten.
         */
         public partial class GameObjectManager { }
 
-        private bool dirtybounds = true, dirtydrawscale = true;
-        private Vector2 pos, size, sizemul;
+        private bool dirtybounds = true, dirtyscale = true;
+        private Vector2 pos, size;
         private List<GameObject> childs;
         private Dictionary<string, Component> components;
         private Component[] comparray;//for fast iteration
+        private CRender renderer;
         protected GameObject parent;
         protected GameObjectManager manager;
-        protected Texture2D sprite;
         protected Bounds bounds;
-        protected Color colour;
         public string tag = "";
 
         public GameObject()
@@ -65,29 +64,27 @@ namespace Core
         {
             bounds = new Bounds(0, 0, 0, 0);
             dirtybounds = true;
-            dirtydrawscale = true;
-            colour = Color.White;
+            dirtyscale = true;
             childs = new List<GameObject>();
             components = new Dictionary<string, Component>();
+            comparray = new Component[0];
         }
 
-        public abstract void Init();
-        public virtual void Update(GameTime gameTime)
+        public virtual void Init() { }
+        public virtual void Update(float gameTime)
         {
             for (int i = 0; i < comparray.Length; i++)
                 comparray[i].Update();
         }
-        public virtual void Draw(GameTime time, SpriteBatch batch)
+        public void FinishFrame()
         {
-            if (dirtydrawscale)
-            {
-                sizemul = size * Grid.Scale(new Vector2(sprite.Width, sprite.Height));
-                dirtydrawscale = false;
-            }
-            //scale de sprite zodat alles resolutie independed is.
-            batch.Draw(sprite, Grid.ToScreenSpace(Pos), null, colour, 0.0f, Vector2.Zero, sizemul, SpriteEffects.None, 0.0f);
+            if (renderer != null)
+                renderer.Update();
+            dirtybounds = false;
+            dirtyscale = false;
         }
-
+        public bool DirtyBounds { get { return dirtybounds; } }
+        public bool DirtySize { get { return dirtyscale; } }
         //GetBounds creates a rectangle that matches the dimensions of the drawn sprite
         /*System with a diryflag ensures we do not have to calculate new bounds
         Everytime we either check for collision or updadate our position.*/
@@ -149,9 +146,14 @@ namespace Core
         }
         public void AddComponent(string name, Component com)
         {
-            components.Add(name, com);
-            comparray = new Component[components.Count];
-            components.Values.CopyTo(comparray, 0);
+            if(com is CRender)
+                renderer = com as CRender;
+            else
+            {
+                components.Add(name, com);
+                comparray = new Component[components.Count];
+                components.Values.CopyTo(comparray, 0);
+            }    
         }
         public int ComponentCount { get { return components.Count; }  }
 
@@ -191,13 +193,7 @@ namespace Core
         public Vector2 Size
         {
             get { return size; }
-            set { size = value; dirtybounds = true; dirtydrawscale = true; }
-        }
-
-        public Color Colour
-        {
-            get { return colour; }
-            set { colour = value; }
+            set { size = value; dirtybounds = true; dirtyscale = true; }
         }
     }
 }

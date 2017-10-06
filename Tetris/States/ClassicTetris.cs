@@ -1,51 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Tetris.States
 {
-    public class Block : GameObject
-    {
-        public Block()
-        {
-            sprite = AssetManager.GetResource<Texture2D>("block");
-            tag = "block";
-            Size = new Vector2(1f, 1f);
-        }
-
-        public override void Init()
-        {
-            Pos = new Vector2(1, 1);
-        }
-
-        public override void Update(GameTime time)
-        {
-
-        }
-
-        public override void Draw(GameTime time, SpriteBatch batch)
-        {
-            base.Draw(time, batch);
-        }
-    }
-
     public class ClassicTetris : GameState
     {
         private GameObject.GameObjectManager objectmanager;
-        private Block b;
+        private GameObject obj;
 
         public ClassicTetris() { }
 
-        public void Load()
+        public void Load(SpriteBatch batch)
         {
             objectmanager = new GameObject.GameObjectManager();
-            b = new Block();
-            objectmanager.Add(b);
+            obj = new GameObject();
+            obj.AddComponent("render", new CRender(obj, "block", batch));
+            obj.Pos = new Vector2(2, 1);
+            obj.Size = new Vector2(2, 2);
+            objectmanager.Add(obj);
             objectmanager.Init();
         }
 
@@ -54,7 +28,7 @@ namespace Tetris.States
             objectmanager.Clear();
         }
 
-        public void Update(GameTime time)
+        public void Update(float time)
         {
             objectmanager.Update(time);
         }
@@ -63,7 +37,7 @@ namespace Tetris.States
         {
             device.Clear(Color.Black);
             batch.Begin();
-            objectmanager.Draw(time, batch);
+            objectmanager.Draw();
             batch.End();
         }
     }

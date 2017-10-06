@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 //Om GameObjects te updaten en te drawen.
 namespace Core
 {
-    public abstract partial class GameObject
+    public partial class GameObject
     {
         public partial class GameObjectManager
         {
@@ -24,16 +24,16 @@ namespace Core
                     objects[i].Init();
             }
 
-            public void Update(GameTime time)
+            public void Update(float time)
             {
                 for (int i = 0; i < Size; i++)
                     objects[i].Update(time);
             }
 
-            public void Draw(GameTime time, SpriteBatch batch)
+            public void Draw()
             {
                 for (int i = 0; i < Size; i++)
-                    objects[i].Draw(time, batch);
+                    objects[i].FinishFrame();
             }
 
             public void Add(GameObject o)

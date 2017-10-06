@@ -6,7 +6,7 @@ namespace Core
 {
     public class Component
     {
-        private GameObject gameObject;
+        protected GameObject gameObject;
         public bool active;
 
         public Component(GameObject parent)
@@ -15,7 +15,7 @@ namespace Core
             active = true;
         }
 
-        public virtual void Update()
+        public virtual void Update(float time)
         {
             if (!active)
                 return;
