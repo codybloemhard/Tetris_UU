@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace Tetris
 {
     public class CBlockMovement : Component
     {
-        private TetrisGrid grid;
         private bool[,] shape;
+        private TetrisGrid grid;
 
-        public CBlockMovement(GameObject parent, TetrisGrid grid, SpriteBatch batch, byte shapeN)
+        public CBlockMovement(GameObject parent, SpriteBatch batch, byte shapeN)
             : base(parent)
         {
-            this.grid = grid;
+            grid = gameObject.FindWithTag("grid").GetComponent<TetrisGrid>();
             shape = new bool[4, 4];
             if (shapeN < 0 || shapeN > 6)
                 shapeN = 0;
@@ -49,7 +50,7 @@ namespace Tetris
             {
                 for(int y = 0; y < 4; y++)
                 {
-                    GameObject obj = new GameObject(gameObject.Manager);
+                    GameObject obj = new GameObject("child", gameObject.Manager);
                     obj.AddComponent("", new CRender(obj, "block", batch));
                     obj.SetParent(gameObject);
                     obj.LocalPos = new Vector2(x * parent.Size.X, y * parent.Size.Y);
@@ -58,11 +59,39 @@ namespace Tetris
                 }
             }
         }
+        
+        //minX, maxX, minY, maxY
+        public int[] GetMinMax()
+        {
+            int[] ans = new int[4] { 9, 0, 9, 0 };
+
+            for(int x = 0; x < 4; x++)
+                for(int y = 0; y < 4; y++)
+                {
+                    if (shape[x, y])
+                    {
+                        ans[0] = Math.Min(ans[0], x);
+                        ans[1] = Math.Max(ans[1], x);
+                        ans[2] = Math.Min(ans[2], y);
+                        ans[3] = Math.Max(ans[3], y);
+                    }
+                }
+
+            return ans;
+        }
+        
+        public bool[,] Shape { get { return shape; } }
 
         public override void Update(float time)
         {
             base.Update(time);
-            gameObject.Pos += Vector2.UnitY * 0.2f * time;
+            gameObject.Pos += Vector2.UnitY * 0.5f * time;
+            int move = 0;
+            if (Input.GetKey(PressAction.RELEASED, Keys.D))
+                move = 1;
+            if (Input.GetKey(PressAction.RELEASED, Keys.A))
+                move = -1;
+            grid.CheckCollision(this, move);
         }
     }
 }

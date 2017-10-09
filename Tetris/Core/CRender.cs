@@ -6,9 +6,9 @@ namespace Core
 {
     public class CRender : Component
     {
-        private Vector2 sizemul;
-        private SpriteBatch batch;
-        private Texture2D sprite;
+        protected Vector2 sizemul;
+        protected SpriteBatch batch;
+        protected Texture2D sprite;
         public Color colour;
 
         public CRender(GameObject parent, string sprite, SpriteBatch batch) : base(parent)
@@ -20,6 +20,7 @@ namespace Core
 
         public override void Update(float time)
         {
+            if (sprite == null) return;
             base.Update(time);
             if (gameObject.DirtySize)
                 sizemul = gameObject.Size * Grid.Scale(new Vector2(sprite.Width, sprite.Height));

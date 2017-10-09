@@ -26,7 +26,10 @@ namespace Core
             T res;
             if (database.GetData<T>(name, out res))
                 return res;
-            res = content.Load<T>(name);
+            try { res = content.Load<T>(name); } 
+            catch(ArgumentNullException){
+                return default(T);
+            }
             database.SetData<T>(name, res);
             return res;
         }

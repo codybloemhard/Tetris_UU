@@ -15,6 +15,11 @@ namespace Core
             active = true;
         }
 
+        public virtual void Init()
+        {
+
+        }
+
         public virtual void Update(float time)
         {
             if (!active)
@@ -25,9 +30,6 @@ namespace Core
         {
         }
 
-        public GameObject GameObject()
-        {
-            return gameObject;
-        }
+        public GameObject GameObject { get { return gameObject; } }
     }
 }

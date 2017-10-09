@@ -29,25 +29,30 @@ namespace Core
             PREV,
             CURRENT
         }
-        private static MouseState prevState, currentState;
+        private static MouseState mprevState, mcurrentState;
+        private static Keys[] kPrev, kCurrent;
 
         static Input()
         {
-            prevState = Mouse.GetState();
-            currentState = Mouse.GetState();
+            mprevState = Mouse.GetState();
+            mcurrentState = Mouse.GetState();
+            kPrev = Keyboard.GetState().GetPressedKeys();
+            kCurrent = Keyboard.GetState().GetPressedKeys();
         }
 
         public static void Update()
         {
-            prevState = currentState;
-            currentState = Mouse.GetState();
+            mprevState = mcurrentState;
+            mcurrentState = Mouse.GetState();
+            kPrev = kCurrent;
+            kCurrent = Keyboard.GetState().GetPressedKeys();
         }
 
         private static bool GetButton(Mstate state, MouseButton button)
         {
             MouseState s;
-            if (state == Mstate.CURRENT) s = currentState;
-            else s = prevState;
+            if (state == Mstate.CURRENT) s = mcurrentState;
+            else s = mprevState;
             switch (button)
             {
                 case MouseButton.LEFT:
@@ -75,6 +80,26 @@ namespace Core
                 return GetButton(Mstate.CURRENT, button) && !GetButton(Mstate.PREV, button);
             else if (action == PressAction.RELEASED)
                 return !GetButton(Mstate.CURRENT, button) && GetButton(Mstate.PREV, button);
+            return false;
+        }
+
+        private static bool KeyIsIn(Mstate state, Keys key)
+        {
+            Keys[] s = kCurrent;
+            if (state == Mstate.PREV) s = kPrev;
+            for(int i = 0; i < s.Length; i++)
+                if (s[i] == key) return true;
+            return false;
+        }
+
+        public static bool GetKey(PressAction action, Keys key)
+        {
+            bool isInPrev = KeyIsIn(Mstate.PREV, key);
+            bool isInCurr = KeyIsIn(Mstate.CURRENT, key);
+            if (action == PressAction.DOWN) return isInCurr;
+            else if (action == PressAction.UP) return !isInCurr;
+            else if (action == PressAction.PRESSED) return !isInPrev && isInCurr;
+            else if (action == PressAction.RELEASED) return isInPrev && !isInCurr;
             return false;
         }
 

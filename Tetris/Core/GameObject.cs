@@ -38,8 +38,6 @@ namespace Core
         /*zodat manager zich zelf can registreren,
         maar dat niet mogelijk is van buitenaf door andere objecten.
         */
-        public partial class GameObjectManager { }
-
         private bool dirtybounds = true, dirtyscale = true;
         private Vector2 localpos, pos, localsize, size;
         private List<GameObject> childs;
@@ -52,6 +50,7 @@ namespace Core
         public string tag = "";
         private float gtime;
         public bool active = true;
+        ulong c = 0;
 
         public GameObject(GameObjectManager manager)
         {
@@ -76,7 +75,11 @@ namespace Core
             comparray = new Component[0];
         }
 
-        public virtual void Init() { }
+        public virtual void Init()
+        {
+            for (int i = 0; i < comparray.Length; i++)
+                comparray[i].Init();
+        }
         public virtual void Update(float gameTime)
         {
             if (!active) return;
@@ -88,6 +91,8 @@ namespace Core
                 Pos = parent.Pos + localpos;
                 Size = parent.Size * localsize;
             }
+            c++;
+            //Console.WriteLine("update: " + tag + ": " + c);
         }
         public void FinishFrame()
         {
@@ -96,6 +101,7 @@ namespace Core
                 renderer.Update(gtime);
             dirtybounds = false;
             dirtyscale = false;
+            //Console.WriteLine("render: " + tag + ": " + c);
         }
         public bool DirtyBounds { get { return dirtybounds; } }
         public bool DirtySize { get { return dirtyscale; } }
@@ -143,19 +149,19 @@ namespace Core
         {
             return components.ContainsKey(name);
         }
-        public T GetComponent<T>()
+        public T GetComponent<T>() where T : class
         {
             for (int i = 0; i < comparray.Length; i++)
             {
                 if (comparray[i] is T)
-                    return (T)Convert.ChangeType(comparray[i], typeof(T));
+                    return comparray[i] as T;
             }
             return default(T);
         }
-        public T GetComponent<T>(string name)
+        public T GetComponent<T>(string name) where T : class
         {
             if(components.ContainsKey(name))
-                return (T)Convert.ChangeType(components[name], typeof(T));
+                return components[name] as T;
             return default(T);
         }
         public void AddComponent(string name, Component com)
@@ -190,11 +196,19 @@ namespace Core
         public void SetParent(GameObject obj)
         {
             parent = obj;
+            parent.childs.Add(this);
         }
         public void DeChild()
         {
             parent.RemoveChild(this);
             parent = null;
+        }
+        public void Destroy()
+        {
+            for (int i = 0; i < childs.Count; i++)
+                childs[i].Destroy();
+            childs.Clear();
+            manager.Destroy(this);
         }
 
         public Vector2 Pos
@@ -237,5 +251,6 @@ namespace Core
         }
 
         public GameObjectManager Manager { get { return manager; } }
+        public CRender Renderer { get { return renderer;  } }
     }
 }
