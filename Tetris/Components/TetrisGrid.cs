@@ -85,26 +85,45 @@ namespace Tetris
         //kijk of er een hele rij is die we weg kunnen halen
         private void UpdateField()
         {
-            for(int y = 0; y < 22; y++)
-                for(int x = 0; x < 12; x++)
+            for (int y = 0; y < 22; y++)
+            {
+                bool complete = true;
+                for (int x = 0; x < 12; x++)
                 {
-
+                    if(grid[x, y] == 0)
+                    {
+                        complete = false;
+                        break;
+                    }
                 }
+                if (complete)
+                {
+                    for (int x = 0; x < 12; x++)
+                        grid[x, y] = 0;
+                    ShiftField(y);
+                }
+            }
+        }
+        //schuif alles boven de lijn 1 naar beneden
+        private void ShiftField(int emptyrow)
+        {
+            for (int y = emptyrow; y > 1; y--)
+                for (int x = 0; x < 12; x++)
+                    grid[x, y] = grid[x, y - 1];
+            for (int x = 0; x < 12; x++)
+                grid[x, 0] = 0;
         }
         //kijk of de shape in het veld past zonder al vaste blokken te raken
         public bool CheckValidRotation(CBlockMovement block, bool[,] shape)
         {
             int[] minmax = block.GetMinMax(shape);
-            float minx, miny, maxx, maxy;
-            minx = block.GameObject.Pos.X + minmax[0] * blocksize.X;
-            maxx = block.GameObject.Pos.X + minmax[1] * blocksize.X;
-            miny = block.GameObject.Pos.Y + minmax[2] * blocksize.Y;
-            maxy = block.GameObject.Pos.Y + minmax[3] * blocksize.Y;
-            
-            if(minx < gameObject.Pos.X || maxx >= gameObject.Pos.X + gameObject.Size.X
-                || miny < gameObject.Pos.Y || maxy >= gameObject.Pos.Y + gameObject.Size.Y)
+            int minx, miny, maxx, maxy;
+            GridSpace(block, minmax[0], minmax[2], out minx, out miny);
+            GridSpace(block, minmax[1], minmax[3], out maxx, out maxy);
+            if (minx < 0 || maxx >= 11 || miny < 0 || maxy >= 21)
                 return false;
-            for(int x = 0; x < 4; x++)
+            
+            for (int x = 0; x < 4; x++)
                 for(int y = 0; y < 4; y++)
                 {
                     int xx, yy;

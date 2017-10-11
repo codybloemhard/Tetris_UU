@@ -30,7 +30,7 @@ namespace Tetris
             GameObject obj = new GameObject("obj", objectmanager);
             obj.Pos = new Vector2(0, 0);
             obj.Size = (grid.GetComponent<TetrisGrid>() as TetrisGrid).BlockSize;
-            obj.AddComponent("move", new CBlockMovement(obj, batch, 3));
+            obj.AddComponent("move", new CBlockMovement(obj, batch, 4));
             
             objectmanager.Init();
         }

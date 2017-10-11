@@ -126,7 +126,10 @@ namespace Tetris
         public override void Update(float time)
         {
             base.Update(time);
-            gameObject.Pos += Vector2.UnitY * 1.0f * time;
+            float mul = 1.0f;
+            if (Input.GetKey(PressAction.DOWN, Keys.S))
+                mul = 3.0f;
+            gameObject.Pos += Vector2.UnitY * 1.0f * time * mul;
             int move = 0;
             if (Input.GetKey(PressAction.RELEASED, Keys.D))
                 move = 1;
