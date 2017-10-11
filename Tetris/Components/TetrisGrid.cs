@@ -30,7 +30,7 @@ namespace Tetris
 
         public void CheckCollision(CBlockMovement block, int move)
         {
-            int[] minmax = block.GetMinMax();
+            int[] minmax = block.GetMinMax(block.Shape);
             //kijk of het block naar links of naar rechts mag (part0)
             bool cangoL = (block.GameObject.Pos.X + ((minmax[0] - 1) * BlockSize.X) >= gameObject.Pos.X);
             bool cangoR = (block.GameObject.Pos.X + ((minmax[1] + 1) * BlockSize.X) <= gameObject.Pos.X + gameObject.Size.X);
@@ -80,6 +80,39 @@ namespace Tetris
                     }
                 }
             block.GameObject.Destroy();
+            UpdateField();
+        }
+        //kijk of er een hele rij is die we weg kunnen halen
+        private void UpdateField()
+        {
+            for(int y = 0; y < 22; y++)
+                for(int x = 0; x < 12; x++)
+                {
+
+                }
+        }
+        //kijk of de shape in het veld past zonder al vaste blokken te raken
+        public bool CheckValidRotation(CBlockMovement block, bool[,] shape)
+        {
+            int[] minmax = block.GetMinMax(shape);
+            float minx, miny, maxx, maxy;
+            minx = block.GameObject.Pos.X + minmax[0] * blocksize.X;
+            maxx = block.GameObject.Pos.X + minmax[1] * blocksize.X;
+            miny = block.GameObject.Pos.Y + minmax[2] * blocksize.Y;
+            maxy = block.GameObject.Pos.Y + minmax[3] * blocksize.Y;
+            
+            if(minx < gameObject.Pos.X || maxx >= gameObject.Pos.X + gameObject.Size.X
+                || miny < gameObject.Pos.Y || maxy >= gameObject.Pos.Y + gameObject.Size.Y)
+                return false;
+            for(int x = 0; x < 4; x++)
+                for(int y = 0; y < 4; y++)
+                {
+                    int xx, yy;
+                    GridSpace(block, x, y, out xx, out yy);
+                    if (grid[xx, yy] == 1)
+                        return false;
+                }
+            return true;
         }
 
         public Vector2 BlockSize { get { return blocksize; } }

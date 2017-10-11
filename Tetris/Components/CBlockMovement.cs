@@ -61,7 +61,7 @@ namespace Tetris
         }
         
         //minX, maxX, minY, maxY
-        public int[] GetMinMax()
+        public int[] GetMinMax(bool[,] shape)
         {
             int[] ans = new int[4] { 9, 0, 9, 0 };
 
@@ -79,19 +79,70 @@ namespace Tetris
 
             return ans;
         }
-        
+
+        private bool[,] Transpose(bool[,] mat)
+        {
+            int w = mat.GetLength(0);
+            int h = mat.GetLength(1);
+            bool[,] ans = new bool[w, h];
+
+            for (int x = 0; x < w; x++)
+                for (int y = 0; y < h; y++)
+                    ans[x, y] = mat[y, x];
+            return ans;
+        }
+
+        private bool[,] Reorder(bool[,] mat, bool hor)
+        {
+            int w = mat.GetLength(0);
+            int h = mat.GetLength(1);
+            bool[,] ans = new bool[h, w];
+            if(hor)
+                for(int y = 0; y < h; y++)
+                    for(int x = 0; x < w; x++)
+                        ans[x, y] = mat[w - x - 1, y];
+            else
+                for (int x = 0; x < w; x++)
+                    for (int y = 0; y < h; y++)
+                        ans[x, y] = mat[x, h - y - 1];
+
+            return ans;
+        }
+
+        private void UpdateShape(bool[,] newshape)
+        {
+            shape = newshape;
+            for (int x = 0; x < 4; x++)
+                for (int y = 0; y < 4; y++)
+                {
+                    GameObject obj = gameObject.Childeren[x * 4 + y];
+                    if (shape[x, y]) obj.active = true;
+                    else obj.active = false;
+                }
+        }
+
         public bool[,] Shape { get { return shape; } }
 
         public override void Update(float time)
         {
             base.Update(time);
-            gameObject.Pos += Vector2.UnitY * 0.5f * time;
+            gameObject.Pos += Vector2.UnitY * 1.0f * time;
             int move = 0;
             if (Input.GetKey(PressAction.RELEASED, Keys.D))
                 move = 1;
             if (Input.GetKey(PressAction.RELEASED, Keys.A))
                 move = -1;
             grid.CheckCollision(this, move);
+            int rotate = 0;
+            if (Input.GetKey(PressAction.RELEASED, Keys.E)) rotate = 1;
+            if (Input.GetKey(PressAction.RELEASED, Keys.Q)) rotate = 2;
+            if(rotate != 0)
+            {
+                bool[,] newshape = Transpose(shape);
+                newshape = Reorder(newshape, rotate == 1 ? true : false);
+                bool ok = grid.CheckValidRotation(this, newshape);
+                if(ok) UpdateShape(newshape);
+            }
         }
     }
 }
