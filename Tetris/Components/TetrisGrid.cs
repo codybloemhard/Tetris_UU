@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Core;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Tetris
 {
@@ -10,17 +11,23 @@ namespace Tetris
         private int[,] grid;
         private CRenderSet renderer;
         private Vector2 blocksize;
-        
-        public TetrisGrid(GameObject parent) : base(parent)
+        private Random random;
+        private SpriteBatch batch;
+        private const int GW = 12, GH = 20;//grid width and height
+
+        public TetrisGrid(GameObject parent, SpriteBatch batch) : base(parent)
         {
-            blocksize = gameObject.Size / new Vector2(12, 22);
+            blocksize = gameObject.Size / new Vector2(GW, GH);
+            this.batch = batch;
+            random = new Random();
         }
         
         public override void Init()
         {
-            grid = new int[12, 22];
+            grid = new int[GW, GH];
             renderer = gameObject.Renderer as CRenderSet;
             renderer.InitSet(grid, new string[] { "", "block" }, gameObject.Pos, gameObject.Size);
+            SpawnNewPiece();
         }
 
         public override void Update(float time)
@@ -43,15 +50,15 @@ namespace Tetris
                     {
                         int xx, yy;
                         GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
-                        if(grid[xx, Math.Min(yy + 1, 21)] == 1)
+                        if(grid[xx, MathHelper.Clamp(yy + 1, 0, GH - 1)] == 1)
                         {
                             LockDown(block);
                             return true;
                         }
                         //kan naar rechts of links? (part1)
-                        if (grid[Math.Max(0, xx - 1), yy] == 1)
+                        if (grid[Math.Max(0, xx - 1), Math.Max(yy, 0)] == 1)
                             cangoL = false;
-                        if (grid[Math.Min(11, xx + 1), yy] == 1)
+                        if (grid[Math.Min(GW - 1, xx + 1), Math.Max(yy, 0)] == 1)
                             cangoR = false;
                     }
                 }
@@ -64,38 +71,18 @@ namespace Tetris
             }
             return false;
         }
-        
-        /*public bool CheckCollision(CBlockMovement block, bool[,] shape, Vector2 pos)
-        {
-            int[] minmax = block.GetMinMax(shape);
-            //collision with lockeddown blocks
-            for (int x = 0; x < 4; x++)
-                for (int y = 0; y < 4; y++)
-                {
-                    if (shape[x, y])
-                    {
-                        int xx, yy;
-                        GridSpace(pos, x, y, out xx, out yy);
-                        if (grid[xx, Math.Min(yy + 1, 21)] == 1)
-                            return true;
-                    }
-                }
-            if (block.GameObject.Pos.Y + ((minmax[3] + 1) * BlockSize.Y) > gameObject.Pos.Y + gameObject.Size.Y)
-                return true;
-            return false;
-        }*/
-        
+        //vertaal de wereld-positie naar de grid-positie
         private void GridSpace(Vector2 pos, int x, int y, out int xx, out int yy)
         {
-            xx = (int)(((pos.X + ((x + 0.5f) * BlockSize.X)) - GameObject.Pos.X) / GameObject.Size.X * 12);
-            yy = (int)(((pos.Y + ((y + 0.5f) * BlockSize.Y)) - GameObject.Pos.Y) / GameObject.Size.Y * 22);
+            xx = (int)(((pos.X + ((x + 0.5f) * BlockSize.X)) - GameObject.Pos.X) / GameObject.Size.X * GW);
+            yy = (int)(((pos.Y + ((y + 0.5f) * BlockSize.Y)) - GameObject.Pos.Y) / GameObject.Size.Y * GH);
         }
-
+        //hoeveel blokken hoog is deze column?
         private int ColumnHeight(int rowindex)
         {
-            for (int y = 0; y < 22; y++)
+            for (int y = 0; y < GH; y++)
                 if (grid[rowindex, y] != 0)
-                    return 22 - y;
+                    return GH - y;
             return 0;
         }
         //zet block vast in grid
@@ -108,19 +95,22 @@ namespace Tetris
                     {
                         int xx, yy;
                         GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
+                        if (xx < 0 || xx > GW - 1 || yy < 0 || yy > GH - 1)
+                            return;
                         grid[xx, yy] = 1;
                     }
                 }
             block.GameObject.Destroy();
             UpdateField();
+            SpawnNewPiece();
         }
         //kijk of er een hele rij is die we weg kunnen halen
         private void UpdateField()
         {
-            for (int y = 0; y < 22; y++)
+            for (int y = 0; y < GH; y++)
             {
                 bool complete = true;
-                for (int x = 0; x < 12; x++)
+                for (int x = 0; x < GW; x++)
                 {
                     if(grid[x, y] == 0)
                     {
@@ -130,7 +120,7 @@ namespace Tetris
                 }
                 if (complete)
                 {
-                    for (int x = 0; x < 12; x++)
+                    for (int x = 0; x < GW; x++)
                         grid[x, y] = 0;
                     ShiftField(y);
                 }
@@ -140,9 +130,9 @@ namespace Tetris
         private void ShiftField(int emptyrow)
         {
             for (int y = emptyrow; y > 1; y--)
-                for (int x = 0; x < 12; x++)
+                for (int x = 0; x < GW; x++)
                     grid[x, y] = grid[x, y - 1];
-            for (int x = 0; x < 12; x++)
+            for (int x = 0; x < GW; x++)
                 grid[x, 0] = 0;
         }
         //kijk of de shape in het veld past zonder al vaste blokken te raken
@@ -152,7 +142,7 @@ namespace Tetris
             int minx, miny, maxx, maxy;
             GridSpace(block.GameObject.Pos, minmax[0], minmax[2], out minx, out miny);
             GridSpace(block.GameObject.Pos, minmax[1], minmax[3], out maxx, out maxy);
-            if (minx <= 0 || maxx >= 11 || miny <= 0 || maxy >= 21)
+            if (minx <= 0 || maxx >= GW - 1 || miny <= 0 || maxy >= GH - 1)
                 return false;
             
             for (int x = 0; x < 4; x++)
@@ -165,7 +155,7 @@ namespace Tetris
                 }
             return true;
         }
-
+        //fastworward een blok naar beneden
         public void BoostDown(CBlockMovement block)
         {
             int[] minmax = block.GetMinMax(block.Shape);
@@ -176,7 +166,7 @@ namespace Tetris
                 int xx, yy;
                 GridSpace(block.GameObject.Pos, minmax[0] + i, minmax[3], out xx, out yy);
                 int height = ColumnHeight(xx);
-                deltas[i] = 22 - yy - height;
+                deltas[i] = GH - yy - height;
             }
             int delta = 0;
             for (int i = 0; i < blockwidth; i++)
@@ -185,7 +175,7 @@ namespace Tetris
             if (delta > 1)
             block.GameObject.Pos += Vector2.UnitY * 1.0f * blocksize;
         }
-
+        //zet een blok zover naar beneden dat hij niet meer veder kan
         public void SettleDown(CBlockMovement block)
         {
             int[] minmax = block.GetMinMax(block.Shape);
@@ -196,7 +186,7 @@ namespace Tetris
                 int xx, yy;
                 GridSpace(block.GameObject.Pos, minmax[0] + i, minmax[3], out xx, out yy);
                 int height = ColumnHeight(xx);
-                deltas[i] = 22 - yy - height;
+                deltas[i] = GH - yy - height;
             }
             int delta = 1000;
             for (int i = 0; i < blockwidth; i++)
@@ -205,6 +195,14 @@ namespace Tetris
             delta--;
             if (delta < 0) delta = 0;
             block.GameObject.Pos += Vector2.UnitY * delta * blocksize;
+        }
+        //spawn een nieuwe blok 
+        public void SpawnNewPiece()
+        {
+            GameObject obj = new GameObject("obj", gameObject.Manager);
+            obj.Pos = new Vector2(0, -blocksize.Y*3);
+            obj.Size = blocksize;
+            obj.AddComponent("move", new CBlockMovement(obj, batch, (byte)(random.NextDouble() * 7)));
         }
 
         public Vector2 BlockSize { get { return blocksize; } }
