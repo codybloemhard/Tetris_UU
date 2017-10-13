@@ -98,7 +98,7 @@ namespace Tetris
                     return 22 - y;
             return 0;
         }
-
+        //zet block vast in grid
         private void LockDown(CBlockMovement block)
         {
             for(int x = 0; x < 4; x++) 
@@ -168,12 +168,43 @@ namespace Tetris
 
         public void BoostDown(CBlockMovement block)
         {
-            
+            int[] minmax = block.GetMinMax(block.Shape);
+            int blockwidth = minmax[1] - minmax[0] + 1;
+            int[] deltas = new int[blockwidth];
+            for (int i = 0; i < blockwidth; i++)
+            {
+                int xx, yy;
+                GridSpace(block.GameObject.Pos, minmax[0] + i, minmax[3], out xx, out yy);
+                int height = ColumnHeight(xx);
+                deltas[i] = 22 - yy - height;
+            }
+            int delta = 0;
+            for (int i = 0; i < blockwidth; i++)
+                if (deltas[i] > delta)
+                    delta = deltas[i];         
+            if (delta > 1)
+            block.GameObject.Pos += Vector2.UnitY * 1.0f * blocksize;
         }
 
         public void SettleDown(CBlockMovement block)
         {
-            
+            int[] minmax = block.GetMinMax(block.Shape);
+            int blockwidth = minmax[1] - minmax[0] + 1;
+            int[] deltas = new int[blockwidth];
+            for (int i = 0; i < blockwidth; i++)
+            {
+                int xx, yy;
+                GridSpace(block.GameObject.Pos, minmax[0] + i, minmax[3], out xx, out yy);
+                int height = ColumnHeight(xx);
+                deltas[i] = 22 - yy - height;
+            }
+            int delta = 1000;
+            for (int i = 0; i < blockwidth; i++)
+                if (deltas[i] < delta)
+                    delta = deltas[i];
+            delta--;
+            if (delta < 0) delta = 0;
+            block.GameObject.Pos += Vector2.UnitY * delta * blocksize;
         }
 
         public Vector2 BlockSize { get { return blocksize; } }
