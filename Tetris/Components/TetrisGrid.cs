@@ -27,8 +27,8 @@ namespace Tetris
         {
             base.Update(time);
         }
-
-        public void CheckCollision(CBlockMovement block, int move)
+        //true als lockdown is gebeurt
+        public bool CheckCollision(CBlockMovement block, int move)
         {
             int[] minmax = block.GetMinMax(block.Shape);
             //kijk of het block naar links of naar rechts mag (part0)
@@ -42,11 +42,11 @@ namespace Tetris
                     if (block.Shape[x, y])
                     {
                         int xx, yy;
-                        GridSpace(block, x, y, out xx, out yy);
+                        GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
                         if(grid[xx, Math.Min(yy + 1, 21)] == 1)
                         {
                             LockDown(block);
-                            return;
+                            return true;
                         }
                         //kan naar rechts of links? (part1)
                         if (grid[Math.Max(0, xx - 1), yy] == 1)
@@ -58,13 +58,45 @@ namespace Tetris
             if (move != 0 && ((cangoL && move == -1) || (cangoR && move == 1)))
                 block.GameObject.Pos += Vector2.UnitX * move * blocksize;
             if (block.GameObject.Pos.Y + ((minmax[3] + 1) * BlockSize.Y) > gameObject.Pos.Y + gameObject.Size.Y)
+            {
                 LockDown(block);
+                return true;
+            }
+            return false;
+        }
+        
+        /*public bool CheckCollision(CBlockMovement block, bool[,] shape, Vector2 pos)
+        {
+            int[] minmax = block.GetMinMax(shape);
+            //collision with lockeddown blocks
+            for (int x = 0; x < 4; x++)
+                for (int y = 0; y < 4; y++)
+                {
+                    if (shape[x, y])
+                    {
+                        int xx, yy;
+                        GridSpace(pos, x, y, out xx, out yy);
+                        if (grid[xx, Math.Min(yy + 1, 21)] == 1)
+                            return true;
+                    }
+                }
+            if (block.GameObject.Pos.Y + ((minmax[3] + 1) * BlockSize.Y) > gameObject.Pos.Y + gameObject.Size.Y)
+                return true;
+            return false;
+        }*/
+        
+        private void GridSpace(Vector2 pos, int x, int y, out int xx, out int yy)
+        {
+            xx = (int)(((pos.X + ((x + 0.5f) * BlockSize.X)) - GameObject.Pos.X) / GameObject.Size.X * 12);
+            yy = (int)(((pos.Y + ((y + 0.5f) * BlockSize.Y)) - GameObject.Pos.Y) / GameObject.Size.Y * 22);
         }
 
-        void GridSpace(CBlockMovement block, int x, int y, out int xx, out int yy)
+        private int ColumnHeight(int rowindex)
         {
-            xx = (int)(((block.GameObject.Pos.X + ((x + 0.5f) * BlockSize.X)) - GameObject.Pos.X) / GameObject.Size.X * 12);
-            yy = (int)(((block.GameObject.Pos.Y + ((y + 0.5f) * BlockSize.Y)) - GameObject.Pos.Y) / GameObject.Size.Y * 22);
+            for (int y = 0; y < 22; y++)
+                if (grid[rowindex, y] != 0)
+                    return 22 - y;
+            return 0;
         }
 
         private void LockDown(CBlockMovement block)
@@ -75,7 +107,7 @@ namespace Tetris
                     if(block.Shape[x, y])
                     {
                         int xx, yy;
-                        GridSpace(block, x, y, out xx, out yy);
+                        GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
                         grid[xx, yy] = 1;
                     }
                 }
@@ -118,20 +150,30 @@ namespace Tetris
         {
             int[] minmax = block.GetMinMax(shape);
             int minx, miny, maxx, maxy;
-            GridSpace(block, minmax[0], minmax[2], out minx, out miny);
-            GridSpace(block, minmax[1], minmax[3], out maxx, out maxy);
-            if (minx < 0 || maxx >= 11 || miny < 0 || maxy >= 21)
+            GridSpace(block.GameObject.Pos, minmax[0], minmax[2], out minx, out miny);
+            GridSpace(block.GameObject.Pos, minmax[1], minmax[3], out maxx, out maxy);
+            if (minx <= 0 || maxx >= 11 || miny <= 0 || maxy >= 21)
                 return false;
             
             for (int x = 0; x < 4; x++)
                 for(int y = 0; y < 4; y++)
                 {
                     int xx, yy;
-                    GridSpace(block, x, y, out xx, out yy);
+                    GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
                     if (grid[xx, yy] == 1)
                         return false;
                 }
             return true;
+        }
+
+        public void BoostDown(CBlockMovement block)
+        {
+            
+        }
+
+        public void SettleDown(CBlockMovement block)
+        {
+            
         }
 
         public Vector2 BlockSize { get { return blocksize; } }
