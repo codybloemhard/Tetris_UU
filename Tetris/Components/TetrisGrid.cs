@@ -14,6 +14,8 @@ namespace Tetris
         private Random random;
         private SpriteBatch batch;
         private const int GW = 12, GH = 20;//grid width and height
+        private byte nextblock;
+        private GameObject nextblockIndicator;
 
         public TetrisGrid(GameObject parent, SpriteBatch batch) : base(parent)
         {
@@ -27,6 +29,10 @@ namespace Tetris
             grid = new int[GW, GH];
             renderer = gameObject.Renderer as CRenderSet;
             renderer.InitSet(grid, new string[] { "", "block" }, gameObject.Pos, gameObject.Size);
+            nextblockIndicator = new GameObject(gameObject.Manager);
+            nextblockIndicator.Pos = new Vector2(12.0f*9.0f/20.0f + 1, 1);
+            nextblockIndicator.Size = blocksize;
+            nextblockIndicator.AddComponent("block", new CBlock(nextblockIndicator, batch, 0));
             SpawnNewPiece();
         }
 
@@ -35,13 +41,15 @@ namespace Tetris
             base.Update(time);
         }
         //true als lockdown is gebeurt
-        public bool CheckCollision(CBlockMovement block, int move)
+        public bool CheckCollision(CBlock block, int move)
         {
             int[] minmax = block.GetMinMax(block.Shape);
             //kijk of het block naar links of naar rechts mag (part0)
-            bool cangoL = (block.GameObject.Pos.X + ((minmax[0] - 1) * BlockSize.X) >= gameObject.Pos.X);
-            bool cangoR = (block.GameObject.Pos.X + ((minmax[1] + 1) * BlockSize.X) <= gameObject.Pos.X + gameObject.Size.X);
-            
+            int lx, rx, ry;
+            GridSpace(block.GameObject.Pos, minmax[1], 0, out rx, out ry);
+            GridSpace(block.GameObject.Pos, minmax[0], 0, out lx, out ry);
+            bool cangoL = lx > 0;
+            bool cangoR = rx < GW - 1;
             //collision with lockeddown blocks
             for(int x = 0; x < 4; x++)
                 for(int y = 0; y < 4; y++)
@@ -50,11 +58,16 @@ namespace Tetris
                     {
                         int xx, yy;
                         GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
-                        if(grid[xx, MathHelper.Clamp(yy + 1, 0, GH - 1)] == 1)
+                        if (xx < 0 || xx > GW - 1 || yy < 0 || yy > GH - 1)
+                        {
+                            cangoL = cangoR = false;
+                            continue;
+                        }
+                        if (grid[xx, MathHelper.Clamp(yy + 1, 0, GH - 1)] == 1)
                         {
                             LockDown(block);
                             return true;
-                        }
+                        }     
                         //kan naar rechts of links? (part1)
                         if (grid[Math.Max(0, xx - 1), Math.Max(yy, 0)] == 1)
                             cangoL = false;
@@ -62,7 +75,7 @@ namespace Tetris
                             cangoR = false;
                     }
                 }
-            if (move != 0 && ((cangoL && move == -1) || (cangoR && move == 1)))
+            if (move != 0 && (((cangoL && move == -1) || (cangoR && move == 1))))
                 block.GameObject.Pos += Vector2.UnitX * move * blocksize;
             if (block.GameObject.Pos.Y + ((minmax[3] + 1) * BlockSize.Y) > gameObject.Pos.Y + gameObject.Size.Y)
             {
@@ -86,7 +99,7 @@ namespace Tetris
             return 0;
         }
         //zet block vast in grid
-        private void LockDown(CBlockMovement block)
+        private void LockDown(CBlock block)
         {
             for(int x = 0; x < 4; x++) 
                 for(int y = 0; y < 4; y++)
@@ -136,7 +149,7 @@ namespace Tetris
                 grid[x, 0] = 0;
         }
         //kijk of de shape in het veld past zonder al vaste blokken te raken
-        public bool CheckValidRotation(CBlockMovement block, bool[,] shape)
+        public bool CheckValidRotation(CBlock block, bool[,] shape)
         {
             int[] minmax = block.GetMinMax(shape);
             int minx, miny, maxx, maxy;
@@ -156,7 +169,7 @@ namespace Tetris
             return true;
         }
         //fastworward een blok naar beneden
-        public void BoostDown(CBlockMovement block)
+        public void BoostDown(CBlock block)
         {
             int[] minmax = block.GetMinMax(block.Shape);
             int blockwidth = minmax[1] - minmax[0] + 1;
@@ -176,7 +189,7 @@ namespace Tetris
             block.GameObject.Pos += Vector2.UnitY * 1.0f * blocksize;
         }
         //zet een blok zover naar beneden dat hij niet meer veder kan
-        public void SettleDown(CBlockMovement block)
+        public void SettleDown(CBlock block)
         {
             int[] minmax = block.GetMinMax(block.Shape);
             int blockwidth = minmax[1] - minmax[0] + 1;
@@ -196,15 +209,19 @@ namespace Tetris
             if (delta < 0) delta = 0;
             block.GameObject.Pos += Vector2.UnitY * delta * blocksize;
         }
-        //spawn een nieuwe blok 
+        //spawn een nieuwe blok
         public void SpawnNewPiece()
         {
             GameObject obj = new GameObject("obj", gameObject.Manager);
             obj.Pos = new Vector2(0, -blocksize.Y*3);
             obj.Size = blocksize;
-            obj.AddComponent("move", new CBlockMovement(obj, batch, (byte)(random.NextDouble() * 7)));
+            obj.AddComponent("block", new CBlock(obj, batch, nextblock));
+            obj.AddComponent("move", new CBlockMovement(obj));
+            nextblock = (byte)(random.NextDouble() * 7);
+            nextblockIndicator.GetComponent<CBlock>().SetShape(nextblock);
         }
 
         public Vector2 BlockSize { get { return blocksize; } }
+        public byte NextBlock { get { return nextblock; } }
     }
 }

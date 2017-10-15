@@ -38,6 +38,7 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\CBlock.cs" />
     <Compile Include="Components\CBlockMovement.cs" />
     <Compile Include="Components\TetrisGrid.cs" />
     <Compile Include="Core\AssetManager.cs" />
