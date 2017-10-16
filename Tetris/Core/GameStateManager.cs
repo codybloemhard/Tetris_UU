@@ -10,7 +10,7 @@ namespace Core
         void Load(SpriteBatch batch);
         void Unload();
         void Update(float time);
-        void Draw(GameTime gameTime, SpriteBatch spriteBatch, GraphicsDevice device);
+        void Draw(float time, SpriteBatch batch, GraphicsDevice device);
     }
     
     public enum CHANGETYPE
@@ -67,15 +67,16 @@ namespace Core
             currentstate.Update(time);
         }
 
-        public void Draw(GameTime gameTime, SpriteBatch spriteBatch, GraphicsDevice device)
+        public void Draw(float time, SpriteBatch batch, GraphicsDevice device)
         {
             if (currentstate == null) return;
-            currentstate.Draw(gameTime, spriteBatch, device);
+            currentstate.Draw(time, batch, device);
         }
 
         public void AddState(string name, GameState state)
         {
             if (state == null) return;
+            if (states.ContainsKey(name)) return;
             states.Add(name, state);
             states[name].Load(instance.batch);
         }

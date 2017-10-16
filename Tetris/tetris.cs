@@ -39,7 +39,9 @@ namespace Tetris
             //setup alle gamestates  
             gamestates = new GameStateManager(spriteBatch);
             ClassicTetris game = new ClassicTetris();
+            GameOver gameover = new GameOver();
             gamestates.AddState("game", game);
+            gamestates.AddState("gameover", gameover);
             gamestates.SetStartingState("game");
         }
 
@@ -58,7 +60,7 @@ namespace Tetris
 
         protected override void Draw(GameTime gameTime)
         {
-            gamestates.Draw(gameTime, spriteBatch, GraphicsDevice);
+            gamestates.Draw((float)gameTime.ElapsedGameTime.TotalSeconds, spriteBatch, GraphicsDevice);
             base.Draw(gameTime);
         }
 

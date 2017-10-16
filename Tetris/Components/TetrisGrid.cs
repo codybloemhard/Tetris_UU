@@ -15,7 +15,9 @@ namespace Tetris
         private SpriteBatch batch;
         private const int GW = 12, GH = 20;//grid width and height
         private byte nextblock;
+        private byte level = 0, blockcounter = 0;
         private GameObject nextblockIndicator;
+        private bool gameover;
 
         public TetrisGrid(GameObject parent, SpriteBatch batch) : base(parent)
         {
@@ -23,19 +25,20 @@ namespace Tetris
             this.batch = batch;
             random = new Random();
         }
-        
         public override void Init()
         {
             grid = new int[GW, GH];
             renderer = gameObject.Renderer as CRenderSet;
             renderer.InitSet(grid, new string[] { "", "block" }, gameObject.Pos, gameObject.Size);
             nextblockIndicator = new GameObject(gameObject.Manager);
-            nextblockIndicator.Pos = new Vector2(12.0f*9.0f/20.0f + 1, 1);
+            nextblockIndicator.Pos = new Vector2(12.0f*9.0f/20.0f + 0.5f, 1);
             nextblockIndicator.Size = blocksize;
             nextblockIndicator.AddComponent("block", new CBlock(nextblockIndicator, batch, 0));
+            gameover = false;
+            DataManager.SetData<int>("score", 0);
+            DataManager.SetData<byte>("level", 0);
             SpawnNewPiece();
         }
-
         public override void Update(float time)
         {
             base.Update(time);
@@ -109,10 +112,15 @@ namespace Tetris
                         int xx, yy;
                         GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
                         if (xx < 0 || xx > GW - 1 || yy < 0 || yy > GH - 1)
+                        {
+                            block.GameObject.Destroy();
+                            SpawnNewPiece();
                             return;
+                        }
                         grid[xx, yy] = 1;
                     }
                 }
+            DataManager.SetData<int>("score", DataManager.GetData<int>("score") + 1);
             block.GameObject.Destroy();
             UpdateField();
             SpawnNewPiece();
@@ -125,6 +133,12 @@ namespace Tetris
                 bool complete = true;
                 for (int x = 0; x < GW; x++)
                 {
+                    if(y == 0 && grid[x, y] == 1)
+                    {
+                        gameover = true;
+                        GameStateManager.RequestChange(new GameStateChange("gameover", CHANGETYPE.LOAD));
+                        return;
+                    }
                     if(grid[x, y] == 0)
                     {
                         complete = false;
@@ -136,6 +150,7 @@ namespace Tetris
                     for (int x = 0; x < GW; x++)
                         grid[x, y] = 0;
                     ShiftField(y);
+                    DataManager.SetData<int>("score", DataManager.GetData<int>("score") + 100);
                 }
             }
         }
@@ -212,11 +227,19 @@ namespace Tetris
         //spawn een nieuwe blok
         public void SpawnNewPiece()
         {
+            if (gameover) return;
+            blockcounter++;
+            if(blockcounter > 10)
+            {
+                blockcounter = 0;
+                level++;
+                DataManager.SetData<byte>("level", level);
+            }
             GameObject obj = new GameObject("obj", gameObject.Manager);
             obj.Pos = new Vector2(0, -blocksize.Y*3);
             obj.Size = blocksize;
             obj.AddComponent("block", new CBlock(obj, batch, nextblock));
-            obj.AddComponent("move", new CBlockMovement(obj));
+            obj.AddComponent("move", new CBlockMovement(obj, 1.0f + ((float)level / 5.0f)));
             nextblock = (byte)(random.NextDouble() * 7);
             nextblockIndicator.GetComponent<CBlock>().SetShape(nextblock);
         }

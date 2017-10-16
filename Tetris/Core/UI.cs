@@ -122,7 +122,7 @@ namespace Core
             bool down = Input.GetMouseButton(PressAction.DOWN, MouseButton.LEFT);
             bool pressed = Input.GetMouseButton(PressAction.RELEASED, MouseButton.LEFT);
             bool hover = bounds.Inside(mpos);
-            if (hover && pressed) pressAction();
+            if (hover && pressed && pressAction != null) pressAction();
             if (hover && down) colour = downColour;
             else if (hover) colour = highlightColour;
             else colour = baseColour;
