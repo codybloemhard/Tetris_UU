@@ -29,7 +29,8 @@ namespace Tetris
         {
             grid = new int[GW, GH];
             renderer = gameObject.Renderer as CRenderSet;
-            renderer.InitSet(grid, new string[] { "", "block" }, gameObject.Pos, gameObject.Size);
+            Color[] colours = { Color.White, Color.Cyan, Color.Blue, Color.Orange, Color.Yellow, Color.Green, Color.Purple, Color.Red };
+            renderer.InitSet(grid, "block", colours, gameObject.Pos, gameObject.Size);
             nextblockIndicator = new GameObject(gameObject.Manager);
             nextblockIndicator.Pos = new Vector2(12.0f*9.0f/20.0f + 0.5f, 1);
             nextblockIndicator.Size = blocksize;
@@ -66,15 +67,15 @@ namespace Tetris
                             cangoL = cangoR = false;
                             continue;
                         }
-                        if (grid[xx, MathHelper.Clamp(yy + 1, 0, GH - 1)] == 1)
+                        if (grid[xx, MathHelper.Clamp(yy + 1, 0, GH - 1)] != 0)
                         {
                             LockDown(block);
                             return true;
                         }     
                         //kan naar rechts of links? (part1)
-                        if (grid[Math.Max(0, xx - 1), Math.Max(yy, 0)] == 1)
+                        if (grid[Math.Max(0, xx - 1), Math.Max(yy, 0)] != 0)
                             cangoL = false;
-                        if (grid[Math.Min(GW - 1, xx + 1), Math.Max(yy, 0)] == 1)
+                        if (grid[Math.Min(GW - 1, xx + 1), Math.Max(yy, 0)] != 0)
                             cangoR = false;
                     }
                 }
@@ -117,7 +118,7 @@ namespace Tetris
                             SpawnNewPiece();
                             return;
                         }
-                        grid[xx, yy] = 1;
+                        grid[xx, yy] = block.ShapeN;
                     }
                 }
             DataManager.SetData<int>("score", DataManager.GetData<int>("score") + 1);
@@ -133,7 +134,7 @@ namespace Tetris
                 bool complete = true;
                 for (int x = 0; x < GW; x++)
                 {
-                    if(y == 0 && grid[x, y] == 1)
+                    if(y == 0 && grid[x, y] != 0)
                     {
                         gameover = true;
                         GameStateManager.RequestChange(new GameStateChange("gameover", CHANGETYPE.LOAD));
@@ -178,7 +179,7 @@ namespace Tetris
                 {
                     int xx, yy;
                     GridSpace(block.GameObject.Pos, x, y, out xx, out yy);
-                    if (grid[xx, yy] == 1)
+                    if (grid[xx, yy] != 0)
                         return false;
                 }
             return true;

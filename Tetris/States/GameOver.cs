@@ -29,9 +29,7 @@ namespace Tetris
             playAgain.SetupColours(Color.Gray, Color.White, Color.DarkGray, Color.Red);
         }
 
-        public void Unload()
-        {
-        }
+        public void Unload() { }
 
         public void Update(float time)
         {

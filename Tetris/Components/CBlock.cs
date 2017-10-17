@@ -10,6 +10,7 @@ namespace Tetris
     {
         private bool[,] shape;
         private TetrisGrid grid;
+        private byte shapeN;
 
         public CBlock(GameObject parent, SpriteBatch batch, byte shapeN)
             : base(parent)
@@ -83,18 +84,22 @@ namespace Tetris
         private void UpdateShape(bool[,] newshape)
         {
             shape = newshape;
+            Color[] colours = { Color.Cyan, Color.Blue, Color.Orange, Color.Yellow, Color.Green, Color.Purple, Color.Red };
+            Color c = colours[shapeN];
             for (int x = 0; x < 4; x++)
                 for (int y = 0; y < 4; y++)
                 {
                     GameObject obj = gameObject.Childeren[x * 4 + y];
                     if (shape[x, y]) obj.active = true;
                     else obj.active = false;
+                    obj.Renderer.colour = c;
                 }
         }
         public void SetShape(byte shapeN)
         {
             if (shapeN < 0 || shapeN > 6)
                 shapeN = 0;
+            this.shapeN = shapeN;
             //load the block shape from a file!
             int block = 0, counter = 0;
             bool[] buffer = new bool[16];
@@ -134,5 +139,7 @@ namespace Tetris
                 if (ok) UpdateShape(newshape);
             }
         }
+
+        public byte ShapeN { get { return (byte)(shapeN + 1); } }
     }
 }

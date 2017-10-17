@@ -47,7 +47,7 @@ namespace Tetris
             scoreText.text = "Score: " + DataManager.GetData<int>("score");
             levelText.text = "Level: " + (DataManager.GetData<byte>("level") + 1);
         }
-
+        
         public void Draw(float time, SpriteBatch batch, GraphicsDevice device)
         {
             device.Clear(Color.Black);
