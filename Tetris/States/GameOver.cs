@@ -15,6 +15,7 @@ namespace Tetris
 
         public void Load(SpriteBatch batch)
         {
+            Highscores.CheckHighScore((uint)DataManager.GetData<int>("score"));
             bigFont = AssetManager.GetResource<SpriteFont>("menuFont");
             mainFont = AssetManager.GetResource<SpriteFont>("mainFont");
             titleText = new Text("Game Over!", Vector2.Zero, new Vector2(16, 3));
@@ -32,7 +33,7 @@ namespace Tetris
             new Vector2(10, 4), new Vector2(4, 3));
             gotoMenu.SetupColours(Color.Gray, Color.White, Color.DarkGray, Color.Red);
         }
-
+        
         public void Unload() { }
 
         public void Update(float time)

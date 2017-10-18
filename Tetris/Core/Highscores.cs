@@ -6,26 +6,66 @@ namespace Core
 {
     public class Highscores
     {
-        private static uint highscore;
-        private static char[] key = { '0', '9', '1', '4', '2', '3', '6', '8', '7', '5' };
+        const string path = "high.score";
+        private static uint highscore = 0;
+        public static uint Highscore { get { return highscore; } }
+        /*een simpele checksum zodat het moeilijker wordt om random
+        waardes in de text file te stoppen en vals te spelen!*/
+        public static void ReadScore()
+        {
+            if (File.Exists(path))
+            {
+                string text = System.IO.File.ReadAllText(path);
+                string score = text.Substring(0, text.Length / 2);
+                string checksum = text.Substring(text.Length / 2, text.Length / 2);
+                highscore = Decrypt(score);
+                uint check = Decrypt(checksum);
+                uint sum = highscore - check;
+                if(sum != 10)
+                {
+                    highscore = 0;
+                    Console.WriteLine("corrupt!");
+                }
+            }
+            else
+                highscore = 0;
+        }
+        public static void WriteScore()
+        {
+            uint checknumber = highscore - 10;
+            string checksum = Encrypt(checknumber);
+            string message = Encrypt(highscore) + checksum;
+            System.IO.File.WriteAllText(path, message);
+        }
 
-        static Highscores() {
-            
+        public static bool CheckHighScore(uint score)
+        {
+            if(score > highscore)
+            {
+                highscore = score;
+                WriteScore();
+                return true;
+            }
+            return false;
         }
 
         //Simpele encryptie zodat gebruikers niet zomaar waardes kunnen aanpassen
-        public static string Encryption(bool encrypt, string source)
+        public static string Encrypt(uint score)
         {
-            int dir = encrypt ? 1 : -1;
+            StringBuilder src = new StringBuilder(score.ToString());
+            for (int i = 0; i < src.Length; i++)
+                src[i] += (char)22;
+            return src.ToString();
+        }
+
+        public static string test() { return "test"; }
+
+        public static uint Decrypt(string source)
+        {
             StringBuilder src = new StringBuilder(source);
             for (int i = 0; i < source.Length; i++)
-                src[i] += (char)(22 * dir);
-            for (int i = 0; i < source.Length; i++)
-                if (source[i] < 48 || source[i] > 57)
-                    return "";
-            for (int i = 0; i < source.Length; i++)
-                src[i] = key[src[i] - 48];
-            return src.ToString();
+                src[i] -= (char)22;
+            return Decode(src.ToString());
         }
 
         public static uint Decode(string source)

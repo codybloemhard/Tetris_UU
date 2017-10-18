@@ -26,6 +26,7 @@ namespace Tetris
             Content.RootDirectory = "Content";
             AssetManager.content = Content;
             this.IsMouseVisible = true;
+            Highscores.ReadScore();
         }
 
         protected override void Initialize()

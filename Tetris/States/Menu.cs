@@ -25,7 +25,7 @@ namespace Tetris
             gotoHighscores = new Button("Highscores", "block", () => GameStateManager.RequestChange(new GameStateChange("highscores", CHANGETYPE.LOAD)),
             new Vector2(10, 4), new Vector2(4, 3));
             gotoHighscores.SetupColours(Color.Gray, Color.White, Color.DarkGray, Color.Red);
-            Console.WriteLine(Highscores.Decode("1234"));
+            Console.WriteLine(Highscores.Highscore);
         }
 
         public void Unload()
