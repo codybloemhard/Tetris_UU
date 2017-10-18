@@ -40,9 +40,11 @@ namespace Tetris
             gamestates = new GameStateManager(spriteBatch);
             ClassicTetris game = new ClassicTetris();
             GameOver gameover = new GameOver();
+            Menu menu = new Menu();
             gamestates.AddState("game", game);
             gamestates.AddState("gameover", gameover);
-            gamestates.SetStartingState("game");
+            gamestates.AddState("menu", menu);
+            gamestates.SetStartingState("menu");
         }
 
         protected override void UnloadContent() { }

@@ -9,8 +9,8 @@ namespace Tetris
     {
         private SpriteFont bigFont, mainFont;
         private Text titleText, scoreText, levelText;
-        private Button playAgain;
-
+        private Button playAgain, gotoMenu;
+        
         public GameOver() { }
 
         public void Load(SpriteBatch batch)
@@ -25,8 +25,12 @@ namespace Tetris
             levelText = new Text("Level: " + (DataManager.GetData<byte>("level") + 1),
                 new Vector2(0, 4), new Vector2(16, 1));
             levelText.colour = Color.Blue;
-            playAgain = new Button("Play Again!", "block", () => GameStateManager.RequestChange(new GameStateChange("game", CHANGETYPE.LOAD)), new Vector2(6, 5), new Vector2(4, 2));
+            playAgain = new Button("Play Again", "block", () => GameStateManager.RequestChange(new GameStateChange("game", CHANGETYPE.LOAD)),
+            new Vector2(2, 4), new Vector2(4, 3));
             playAgain.SetupColours(Color.Gray, Color.White, Color.DarkGray, Color.Red);
+            gotoMenu = new Button("Goto Menu", "block", () => GameStateManager.RequestChange(new GameStateChange("menu", CHANGETYPE.LOAD)),
+            new Vector2(10, 4), new Vector2(4, 3));
+            gotoMenu.SetupColours(Color.Gray, Color.White, Color.DarkGray, Color.Red);
         }
 
         public void Unload() { }
@@ -34,6 +38,7 @@ namespace Tetris
         public void Update(float time)
         {
             playAgain.Update();
+            gotoMenu.Update();
         }
 
         public void Draw(float time, SpriteBatch batch, GraphicsDevice device)
@@ -45,6 +50,7 @@ namespace Tetris
                 scoreText.Draw(batch, mainFont);
                 levelText.Draw(batch, mainFont);
                 playAgain.Draw(batch, mainFont);
+                gotoMenu.Draw(batch, mainFont);
             }
             batch.End();
         }

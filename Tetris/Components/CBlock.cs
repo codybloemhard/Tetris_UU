@@ -35,11 +35,10 @@ namespace Tetris
         }
 
         public bool[,] Shape { get { return shape; } }
-        //minX, maxX, minY, maxY
+        //returns minX, maxX, minY, maxY op die volgorde
         public int[] GetMinMax(bool[,] shape)
         {
             int[] ans = new int[4] { 9, 0, 9, 0 };
-
             for (int x = 0; x < 4; x++)
                 for (int y = 0; y < 4; y++)
                 {
@@ -54,6 +53,7 @@ namespace Tetris
 
             return ans;
         }
+        //simpele matrix operatie
         private bool[,] Transpose(bool[,] mat)
         {
             int w = mat.GetLength(0);
@@ -65,6 +65,7 @@ namespace Tetris
                     ans[x, y] = mat[y, x];
             return ans;
         }
+        //rows of columns omdraaien
         private bool[,] Reorder(bool[,] mat, bool hor)
         {
             int w = mat.GetLength(0);
@@ -81,6 +82,7 @@ namespace Tetris
 
             return ans;
         }
+        //de juiste childs aan en uitzetten
         private void UpdateShape(bool[,] newshape)
         {
             shape = newshape;
@@ -95,12 +97,13 @@ namespace Tetris
                     obj.Renderer.colour = c;
                 }
         }
+        //in een bepaalde tetris figuur transformeren
         public void SetShape(byte shapeN)
         {
             if (shapeN < 0 || shapeN > 6)
                 shapeN = 0;
             this.shapeN = shapeN;
-            //load the block shape from a file!
+            //load the block shape from a file
             int block = 0, counter = 0;
             bool[] buffer = new bool[16];
             string text = System.IO.File.ReadAllText("Blocks.txt");
@@ -129,6 +132,7 @@ namespace Tetris
             //set childs 
             UpdateShape(shape);
         }
+        //draaien van het figuur
         public void Rotate(int rotate)
         {
             if (rotate != 0)

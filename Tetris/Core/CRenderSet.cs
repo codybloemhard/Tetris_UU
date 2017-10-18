@@ -4,12 +4,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Core
 {
+    //Rendered een set van gelijksoortige objecten
     public class CRenderSet : CRender
     {
         private int[,] set;
         private Color[] colours;
         private Vector2 pos, size;
-        private Vector2 blocksize, sizemul;
+        private Vector2 blocksize, sizemultiplier;
         private Texture2D texture;
 
         public CRenderSet(GameObject parent, string sprite, SpriteBatch batch)
@@ -20,7 +21,7 @@ namespace Core
             this.colours = colours;
             blocksize = new Vector2(size.X / set.GetLength(0), size.Y / set.GetLength(1));
             this.texture = AssetManager.GetResource<Texture2D>(texture);
-            sizemul = blocksize * Grid.Scale(new Vector2(this.texture.Width, this.texture.Height));
+            sizemultiplier = blocksize * Grid.Scale(new Vector2(this.texture.Width, this.texture.Height));
             
             this.set = set;
             this.pos = pos;
@@ -47,7 +48,7 @@ namespace Core
                     if (i >= 0 && i < colours.Length) c = colours[i];
                     else c = Color.White;
                     Vector2 cstep = blocksize * new Vector2(x, y);
-                    batch.Draw(texture, Grid.ToScreenSpace(pos + (cstep)), null, c, 0.0f, Vector2.Zero, sizemul, SpriteEffects.None, 0.0f);
+                    batch.Draw(texture, Grid.ToScreenSpace(pos + (cstep)), null, c, 0.0f, Vector2.Zero, sizemultiplier, SpriteEffects.None, 0.0f);
                 }
         }
     }

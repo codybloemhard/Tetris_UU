@@ -35,9 +35,6 @@ namespace Core
     
     public partial class GameObject
     {
-        /*zodat manager zich zelf can registreren,
-        maar dat niet mogelijk is van buitenaf door andere objecten.
-        */
         private bool dirtybounds = true, dirtyscale = true;
         private Vector2 localpos, pos, localsize, size;
         private List<GameObject> childs;
@@ -50,7 +47,6 @@ namespace Core
         public string tag = "";
         private float gtime;
         public bool active = true;
-        ulong c = 0;
 
         public GameObject(GameObjectManager manager)
         {
@@ -91,8 +87,6 @@ namespace Core
                 Pos = parent.Pos + localpos;
                 Size = parent.Size * localsize;
             }
-            c++;
-            //Console.WriteLine("update: " + tag + ": " + c);
         }
         public void FinishFrame()
         {
@@ -101,7 +95,6 @@ namespace Core
                 renderer.Update(gtime);
             dirtybounds = false;
             dirtyscale = false;
-            //Console.WriteLine("render: " + tag + ": " + c);
         }
         public bool DirtyBounds { get { return dirtybounds; } }
         public bool DirtySize { get { return dirtyscale; } }
@@ -144,7 +137,7 @@ namespace Core
             if (GetBounds().Intersects(e.GetBounds())) return true;
             return false;
         }
-
+        //methods om components te beheren
         public bool HasComponent(string name)
         {
             return components.ContainsKey(name);
@@ -176,7 +169,7 @@ namespace Core
             }    
         }
         public int ComponentCount { get { return components.Count; }  }
-
+        //methods om parent-childs relaties te beheren
         public GameObject Parent { get { return parent; } }
         public GameObject[] Childeren { get { return childs.ToArray(); } }
         public GameObject GetChild(int i)
@@ -210,7 +203,7 @@ namespace Core
             childs.Clear();
             manager.Destroy(this);
         }
-
+        //locale en wereld coordinaten
         public Vector2 Pos
         {
             get { return pos; }
@@ -220,7 +213,6 @@ namespace Core
                 dirtybounds = true;
             }
         }
-
         public Vector2 LocalPos
         {
             get { return localpos; }
@@ -231,7 +223,6 @@ namespace Core
                 dirtybounds = true;
             }
         }
-
         public Vector2 Size
         {
             get { return size; }
