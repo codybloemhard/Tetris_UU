@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Content;
 
 namespace Tetris
 {
@@ -18,6 +20,7 @@ namespace Tetris
         private byte level = 0, blockcounter = 0;
         private GameObject nextblockIndicator;
         private bool gameover;
+        private SoundEffect blocklock, lineclear;
 
         public TetrisGrid(GameObject parent, SpriteBatch batch) : base(parent)
         {
@@ -39,6 +42,8 @@ namespace Tetris
             DataManager.SetData<int>("score", 0);
             DataManager.SetData<byte>("level", 0);
             SpawnNewPiece();
+            blocklock = AssetManager.GetResource<SoundEffect>("blocklock");
+            lineclear = AssetManager.GetResource<SoundEffect>("lineclear");            
         }
         public override void Update(float time)
         {
@@ -121,6 +126,7 @@ namespace Tetris
                         grid[xx, yy] = block.ShapeN;
                     }
                 }
+            blocklock.Play();
             DataManager.SetData<int>("score", DataManager.GetData<int>("score") + 1);
             block.GameObject.Destroy();
             UpdateField();
@@ -152,6 +158,7 @@ namespace Tetris
                         grid[x, y] = 0;
                     ShiftField(y);
                     DataManager.SetData<int>("score", DataManager.GetData<int>("score") + 100);
+                    lineclear.Play();
                 }
             }
         }
