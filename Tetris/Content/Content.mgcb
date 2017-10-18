@@ -49,3 +49,21 @@
 /processorParam:TextureFormat=Compressed
 /build:menuFont.spritefont
 
+#begin Tetris.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Tetris.mp3
+
+#begin lineclear.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:lineclear.wav
+
+#begin blocklock.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:blocklock.wav
+

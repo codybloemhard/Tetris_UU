@@ -15,17 +15,20 @@ namespace Tetris
         private SpriteBatch spriteBatch;
         private GameStateManager gamestates;
         private static Random random = new Random();
+        Song song;
 
         public Tetris()
         {
             graphics = new GraphicsDeviceManager(this);
             //setup worldspace to abstract from screenspace
-            Grid.Setup(16, 9, 1600, 900);
+            Grid.Setup(16, 9, 800, 450);
             graphics.PreferredBackBufferWidth = (int)Grid.ScreenSize.X;
             graphics.PreferredBackBufferHeight = (int)Grid.ScreenSize.Y;
             Content.RootDirectory = "Content";
+            this.song = Content.Load<Song>("tetris");
             AssetManager.content = Content;
             this.IsMouseVisible = true;
+
         }
 
         protected override void Initialize()
@@ -45,6 +48,9 @@ namespace Tetris
             gamestates.AddState("gameover", gameover);
             gamestates.AddState("menu", menu);
             gamestates.SetStartingState("menu");
+            MediaPlayer.Play(song);
+            MediaPlayer.Volume = 0.25f;
+            MediaPlayer.IsRepeating = true;
         }
 
         protected override void UnloadContent() { }
