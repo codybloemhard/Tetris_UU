@@ -21,6 +21,7 @@ namespace Tetris
         private GameObject nextblockIndicator;
         private bool gameover;
         private SoundEffect blocklock, lineclear;
+        private CParticles emitter;
 
         public TetrisGrid(GameObject parent, SpriteBatch batch) : base(parent)
         {
@@ -43,7 +44,8 @@ namespace Tetris
             DataManager.SetData<byte>("level", 0);
             SpawnNewPiece();
             blocklock = AssetManager.GetResource<SoundEffect>("blocklock");
-            lineclear = AssetManager.GetResource<SoundEffect>("lineclear");            
+            lineclear = AssetManager.GetResource<SoundEffect>("lineclear");
+            emitter = gameObject.FindWithTag("emitter").GetComponent<CParticles>();
         }
         public override void Update(float time)
         {
@@ -135,17 +137,20 @@ namespace Tetris
         //kijk of er een hele rij is die we weg kunnen halen
         private void UpdateField()
         {
+            for(int x = 0; x < GW; x++)
+            {
+                if (grid[x, 0] != 0)
+                {
+                    gameover = true;
+                    GameStateManager.RequestChange(new GameStateChange("gameover", CHANGETYPE.LOAD));
+                    return;
+                }
+            }
             for (int y = 0; y < GH; y++)
             {
                 bool complete = true;
                 for (int x = 0; x < GW; x++)
                 {
-                    if(y == 0 && grid[x, y] != 0)
-                    {
-                        gameover = true;
-                        GameStateManager.RequestChange(new GameStateChange("gameover", CHANGETYPE.LOAD));
-                        return;
-                    }
                     if(grid[x, y] == 0)
                     {
                         complete = false;
@@ -159,6 +164,8 @@ namespace Tetris
                     ShiftField(y);
                     DataManager.SetData<int>("score", DataManager.GetData<int>("score") + 100);
                     lineclear.Play();
+                    emitter.EmitColumn(gameObject.Pos + (Vector2.UnitY * y * blocksize), 
+                        gameObject.Pos + (Vector2.UnitY * y * blocksize) + (Vector2.UnitX * GW * blocksize), GW);
                 }
             }
         }
@@ -224,11 +231,11 @@ namespace Tetris
                 int height = ColumnHeight(xx);
                 deltas[i] = GH - yy - height;
             }
-            int delta = 1000;
+            float delta = 1000f;
             for (int i = 0; i < blockwidth; i++)
                 if (deltas[i] < delta)
                     delta = deltas[i];
-            delta--;
+            delta -= 1.5f;
             if (delta < 0) delta = 0;
             block.GameObject.Pos += Vector2.UnitY * delta * blocksize;
         }
@@ -244,7 +251,7 @@ namespace Tetris
                 DataManager.SetData<byte>("level", level);
             }
             GameObject obj = new GameObject("obj", gameObject.Manager);
-            obj.Pos = new Vector2(0, -blocksize.Y*3);
+            obj.Pos = new Vector2(blocksize.X * 3, -blocksize.Y*3);
             obj.Size = blocksize;
             obj.AddComponent("block", new CBlock(obj, batch, nextblock));
             obj.AddComponent("move", new CBlockMovement(obj, 1.0f + ((float)level / 5.0f)));

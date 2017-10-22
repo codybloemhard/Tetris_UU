@@ -23,19 +23,22 @@ namespace Core
                 uint sum = highscore - check;
                 if(sum != 10)
                 {
-                    highscore = 0;
-                    Console.WriteLine("corrupt!");
+                    Console.WriteLine("corrupt");
+                    WriteScore();
                 }
+                highscore -= 100;
             }
             else
                 highscore = 0;
         }
         public static void WriteScore()
         {
+            highscore += 100;
             uint checknumber = highscore - 10;
             string checksum = Encrypt(checknumber);
             string message = Encrypt(highscore) + checksum;
             System.IO.File.WriteAllText(path, message);
+            highscore -= 100;
         }
 
         public static bool CheckHighScore(uint score)

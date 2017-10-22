@@ -12,6 +12,7 @@ namespace Tetris
         private SpriteBatch batch;
         private Text scoreText, levelText;
         private SpriteFont scorefont;
+        private ParticleEmitter emitter;
 
         public ClassicTetris() { }
 
@@ -19,6 +20,10 @@ namespace Tetris
         {
             this.batch = batch;
             objectmanager = new GameObjectManager();
+
+            emitter = new ParticleEmitter("block", 100);
+            GameObject particles = new GameObject("emitter", objectmanager);
+            particles.AddComponent("emitter", new CParticles(particles, emitter));
 
             GameObject grid = new GameObject("grid", objectmanager);
             grid.Pos = new Vector2(0, 0);
@@ -46,6 +51,7 @@ namespace Tetris
             objectmanager.Update(time);
             scoreText.text = "Score: " + DataManager.GetData<int>("score");
             levelText.text = "Level: " + (DataManager.GetData<byte>("level") + 1);
+            emitter.Update(time);
         }
         
         public void Draw(float time, SpriteBatch batch, GraphicsDevice device)
@@ -56,6 +62,7 @@ namespace Tetris
                 objectmanager.Draw();
                 scoreText.Draw(batch, scorefont);
                 levelText.Draw(batch, scorefont);
+                emitter.Draw(batch);
             }
             batch.End();
         }

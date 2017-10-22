@@ -17,11 +17,11 @@ namespace Core
 
         public Particle() {  }
 
-        public void Update()
+        public void Update(float deltaTime)
         {
             if (lives == 0) return;
             lives--;
-            pos += dir * speed;
+            pos += dir * speed * deltaTime;
             size *= derivSize;
             if (size.X < 0 || size.Y < 0) size = Vector2.Zero;
             transparency = EditColourChannel(transparency);
@@ -75,10 +75,10 @@ namespace Core
             index += rate;
         }
         
-        public void Update()
+        public void Update(float deltaTime)
         {
             for (int i = 0; i < size; i++)
-                particles[i].Update();
+                particles[i].Update(deltaTime);
         }
 
         private void Spawn(Particle p)

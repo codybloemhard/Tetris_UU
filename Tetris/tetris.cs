@@ -15,6 +15,7 @@ namespace Tetris
         private SpriteBatch spriteBatch;
         private GameStateManager gamestates;
         private static Random random = new Random();
+        private Song song;
 
         public Tetris()
         {
@@ -27,6 +28,10 @@ namespace Tetris
             AssetManager.content = Content;
             this.IsMouseVisible = true;
             Highscores.ReadScore();
+            song = AssetManager.GetResource<Song>("Tetris");
+            MediaPlayer.Play(song);
+            MediaPlayer.Volume = 0.2f;
+            MediaPlayer.IsRepeating = true;
         }
 
         protected override void Initialize()
@@ -48,7 +53,7 @@ namespace Tetris
             gamestates.SetStartingState("menu");
         }
 
-        protected override void UnloadContent() { }
+        protected override void UnloadContent() { song.Dispose(); }
 
         protected override void Update(GameTime gameTime)
         {
